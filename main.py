@@ -102,6 +102,7 @@ def parse_args():
 
 args = parse_args()
 
+<<<<<<< HEAD
 def _extract_zip_if_present(zip_name: str, extract_to: str, extract_base: str = "data"):
     """If a zip file named `zip_name` exists in cwd, extract it into `extract_base` and remove the zip.
     If the target extraction path already exists, do nothing.
@@ -171,6 +172,7 @@ dataset = DATASET_MAP[args.dataset]
 data_paths = list(glob.glob(os.path.join(dataset, "**/data.csv"), recursive=True))
 if not data_paths: 
     data_paths = list(glob.glob(os.path.join(dataset, "**/simple_metrics.csv"), recursive=True))
+    print("data_path not found")
 # new_data_paths = []
 # for p in data_paths: 
 #     if os.path.exists(p.replace("data.csv", "simple_data.csv")):
@@ -309,8 +311,8 @@ for data_path in tqdm(sorted(data_paths)):
 
 end_time = datetime.now()
 time_taken = end_time - start_time
-avg_speed = round(time_taken.total_seconds() / len(data_paths), 2)
-
+#avg_speed = round(time_taken.total_seconds() / len(data_paths), 2)
+avg_speed=0
 
 # ======== EVALUTION ===========
 rps = glob.glob(join(result_path, "*.json"))
