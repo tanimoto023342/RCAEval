@@ -145,6 +145,7 @@ dataset = DATASET_MAP[args.dataset]
 data_paths = list(glob.glob(os.path.join(dataset, "**/data.csv"), recursive=True))
 if not data_paths: 
     data_paths = list(glob.glob(os.path.join(dataset, "**/simple_metrics.csv"), recursive=True))
+    print("data_path not found")
 # new_data_paths = []
 # for p in data_paths: 
 #     if os.path.exists(p.replace("data.csv", "simple_data.csv")):
