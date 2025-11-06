@@ -7,6 +7,7 @@ import warnings
 from datetime import datetime, timedelta
 from multiprocessing import Pool
 from os.path import abspath, basename, dirname, exists, join
+import zipfile
 
 # turn off all warnings
 warnings.filterwarnings("ignore")
@@ -101,22 +102,49 @@ def parse_args():
 
 args = parse_args()
 
-# download dataset
+def _extract_zip_if_present(zip_name: str, extract_to: str, extract_base: str = "data"):
+    """If a zip file named `zip_name` exists in cwd, extract it into `extract_base` and remove the zip.
+    If the target extraction path already exists, do nothing.
+    """
+    target_path = os.path.join(extract_base, extract_to)
+    if os.path.exists(target_path):
+        return
+    if os.path.exists(zip_name):
+        with zipfile.ZipFile(zip_name, "r") as zf:
+            zf.extractall(extract_base)
+        try:
+            os.remove(zip_name)
+        except Exception:
+            pass
+
+
+# download dataset (if extracted folder exists we skip; if zip exists we extract only; otherwise download)
 if "online-boutique" in args.dataset or "re1-ob" in args.dataset:
+    _extract_zip_if_present("online-boutique.zip", "online-boutique")
     download_online_boutique_dataset()
 elif "sock-shop-1" in args.dataset:
+    _extract_zip_if_present("sock-shop-1.zip", "sock-shop-1")
     download_sock_shop_1_dataset()
 elif "sock-shop-2" in args.dataset or "re1-ss" in args.dataset:
+    _extract_zip_if_present("sock-shop-2.zip", "sock-shop-2")
     download_sock_shop_2_dataset()
 elif "train-ticket" in args.dataset or "re1-tt" in args.dataset:
+    _extract_zip_if_present("train-ticket.zip", "train-ticket")
     download_train_ticket_dataset()
 elif "re2-ob" in args.dataset.lower():
+    _extract_zip_if_present("RE2-OB.zip", os.path.join("RE2", "RE2-OB"), extract_base=os.path.join("data", "RE2"))
     download_re2ob_dataset()
 elif "re2-ss" in args.dataset.lower():
+    _extract_zip_if_present("RE2-SS.zip", os.path.join("RE2", "RE2-SS"), extract_base=os.path.join("data", "RE2"))
     download_re2ss_dataset()
 elif "re2-tt" in args.dataset.lower():
+    _extract_zip_if_present("RE2-TT.zip", os.path.join("RE2", "RE2-TT"), extract_base=os.path.join("data", "RE2"))
     download_re2tt_dataset()
 elif "re3" in args.dataset:
+    # RE3 zips are named RE3-OB/SS/TT.zip and extracted under data/RE3
+    _extract_zip_if_present("RE3-OB.zip", os.path.join("RE3", "RE3-OB"), extract_base=os.path.join("data", "RE3"))
+    _extract_zip_if_present("RE3-SS.zip", os.path.join("RE3", "RE3-SS"), extract_base=os.path.join("data", "RE3"))
+    _extract_zip_if_present("RE3-TT.zip", os.path.join("RE3", "RE3-TT"), extract_base=os.path.join("data", "RE3"))
     download_re3_dataset()
 else:
     raise Exception(f"{args.dataset} is not defined!")
