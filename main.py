@@ -227,7 +227,14 @@ def process(data_path):
 
     data_dir = dirname(data_path)
 
-    service, metric = basename(dirname(dirname(data_path))).split("_")
+    # Safely parse directory name that might contain multiple underscores
+    dir_parts = basename(dirname(dirname(data_path))).split("_")
+    if len(dir_parts) < 2:
+        logging.error("Invalid path format - expected directory name with at least one underscore: %s", data_path)
+        raise ValueError(f"Invalid path format in {data_path}")
+    # Take first part as service, second as metric, ignore any additional parts
+    service, metric = dir_parts[0], dir_parts[1]
+    logging.debug("Parsed path: service='%s', metric='%s' from '%s'", service, metric, dirname(dirname(data_path)))
     case = basename(dirname(data_path))
 
     rp = join(result_path, f"{service}_{metric}_{case}.json")
