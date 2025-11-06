@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from multiprocessing import Pool
 from os.path import abspath, basename, dirname, exists, join
 import zipfile
+import logging
 
 # turn off all warnings
 warnings.filterwarnings("ignore")
@@ -36,6 +37,9 @@ from RCAEval.utility import (
     download_re3_dataset, 
 
 )
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
 
 if is_py312():
@@ -110,6 +114,7 @@ def _extract_zip_if_present(zip_name: str, extract_to: str, extract_base: str = 
     if os.path.exists(target_path):
         return
     if os.path.exists(zip_name):
+        logging.info(f'Extracting {zip_name} to {extract_base}')
         with zipfile.ZipFile(zip_name, "r") as zf:
             zf.extractall(extract_base)
         try:
@@ -120,33 +125,49 @@ def _extract_zip_if_present(zip_name: str, extract_to: str, extract_base: str = 
 
 # download dataset (if extracted folder exists we skip; if zip exists we extract only; otherwise download)
 if "online-boutique" in args.dataset or "re1-ob" in args.dataset:
+    logging.info("Processing online-boutique dataset...")
     _extract_zip_if_present("online-boutique.zip", "online-boutique")
+    logging.info("Online-boutique dataset processed successfully.")
     download_online_boutique_dataset()
 elif "sock-shop-1" in args.dataset:
+    logging.info("Processing sock-shop-1 dataset...")
     _extract_zip_if_present("sock-shop-1.zip", "sock-shop-1")
+    logging.info("Sock-shop-1 dataset processed successfully.")
     download_sock_shop_1_dataset()
 elif "sock-shop-2" in args.dataset or "re1-ss" in args.dataset:
+    logging.info("Processing sock-shop-2 dataset...")
     _extract_zip_if_present("sock-shop-2.zip", "sock-shop-2")
+    logging.info("Sock-shop-2 dataset processed successfully.")
     download_sock_shop_2_dataset()
 elif "train-ticket" in args.dataset or "re1-tt" in args.dataset:
+    logging.info("Processing train-ticket dataset...")
     _extract_zip_if_present("train-ticket.zip", "train-ticket")
+    logging.info("Train-ticket dataset processed successfully.")
     download_train_ticket_dataset()
 elif "re2-ob" in args.dataset.lower():
+    logging.info("Processing RE2-OB dataset...")
     _extract_zip_if_present("RE2-OB.zip", os.path.join("RE2", "RE2-OB"), extract_base=os.path.join("data", "RE2"))
+    logging.info("RE2-OB dataset processed successfully.")
     download_re2ob_dataset()
 elif "re2-ss" in args.dataset.lower():
+    logging.info("Processing RE2-SS dataset...")
     _extract_zip_if_present("RE2-SS.zip", os.path.join("RE2", "RE2-SS"), extract_base=os.path.join("data", "RE2"))
+    logging.info("RE2-SS dataset processed successfully.")
     download_re2ss_dataset()
 elif "re2-tt" in args.dataset.lower():
+    logging.info("Processing RE2-TT dataset...")
     _extract_zip_if_present("RE2-TT.zip", os.path.join("RE2", "RE2-TT"), extract_base=os.path.join("data", "RE2"))
+    logging.info("RE2-TT dataset processed successfully.")
     download_re2tt_dataset()
 elif "re3" in args.dataset:
-    # RE3 zips are named RE3-OB/SS/TT.zip and extracted under data/RE3
+    logging.info("Processing RE3 datasets...")
     _extract_zip_if_present("RE3-OB.zip", os.path.join("RE3", "RE3-OB"), extract_base=os.path.join("data", "RE3"))
     _extract_zip_if_present("RE3-SS.zip", os.path.join("RE3", "RE3-SS"), extract_base=os.path.join("data", "RE3"))
     _extract_zip_if_present("RE3-TT.zip", os.path.join("RE3", "RE3-TT"), extract_base=os.path.join("data", "RE3"))
+    logging.info("RE3 datasets processed successfully.")
     download_re3_dataset()
 else:
+    logging.error(f"{args.dataset} is not defined!")
     raise Exception(f"{args.dataset} is not defined!")
 
 DATASET_MAP = {
