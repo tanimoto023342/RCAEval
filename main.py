@@ -395,7 +395,21 @@ for service in services:
                     else []
                 )
 
-                f_ranks = [Node(x.split("_")[0], x.split("_")[1]) for x in ranks]
+                # Parse full ranks into (service, fault) pairs safely.
+                f_ranks = []
+                for x in ranks:
+                    if not isinstance(x, str) or x.strip() == "":
+                        logging.warning("Skipping empty or non-string rank entry: %r", x)
+                        continue
+                    parts = x.split("_")
+                    if len(parts) >= 2 and parts[0] and parts[1]:
+                        f_ranks.append(Node(parts[0], parts[1]))
+                    elif len(parts) >= 1 and parts[0]:
+                        # missing fault part, fallback to 'unknown'
+                        logging.warning("Rank entry '%s' missing fault part; using 'unknown'", x)
+                        f_ranks.append(Node(parts[0], "unknown"))
+                    else:
+                        logging.warning("Skipping malformed rank entry: '%s'", x)
 
                 s_evaluator.add_case(ranks=s_ranks, answer=Node(service, "unknown"))
                 f_evaluator.add_case(ranks=f_ranks, answer=Node(service, fault))
