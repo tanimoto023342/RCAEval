@@ -291,7 +291,36 @@ def process(data_path):
         elif "frontend_1" in data:
             sli = "frontend_1"
     else:
-        raise ValueError("SLI not implemented")
+        # Instead of raising, try to auto-detect an SLI column. This avoids crashing when
+        # datasets use slightly different naming conventions (e.g., RE3 files).
+        logging.warning("SLI not matched by known rules for %s. Attempting auto-detection.", data_path)
+        # Prioritized candidate names
+        candidates = [f"{service}_latency", f"{service}_lat_90", f"{service}_lat", "frontend_latency", "frontend_1", "ts-ui-dashboard_latency"]
+        for c in candidates:
+            if c in data.columns:
+                sli = c
+                logging.info("Auto-detected SLI '%s' for %s", sli, data_path)
+                break
+
+        # Fallback: pick the first column that contains common keywords
+        if sli is None:
+            for col in data.columns:
+                if col == "time":
+                    continue
+                if any(k in col for k in ["latency", "lat_", "lat", "cpu", "mem", "disk", "loss"]):
+                    sli = col
+                    logging.info("Auto-detected SLI by keyword '%s' for %s", sli, data_path)
+                    break
+
+        # Final fallback: first numeric column (excluding time)
+        if sli is None:
+            num_cols = [c for c in data.select_dtypes(include=[np.number]).columns if c != "time"]
+            if num_cols:
+                sli = num_cols[0]
+                logging.warning("Using first numeric column '%s' as SLI for %s", sli, data_path)
+            else:
+                logging.warning("Could not auto-detect SLI for %s; proceeding with sli=None", data_path)
+                sli = None
 
     # == PROCESS ==
     func = globals()[args.method]
