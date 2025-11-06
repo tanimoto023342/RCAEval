@@ -399,17 +399,27 @@ for service in services:
                 f_ranks = []
                 for x in ranks:
                     if not isinstance(x, str) or x.strip() == "":
-                        logging.warning("Skipping empty or non-string rank entry: %r", x)
+                        logging.warning("Skipping empty or non-string rank entry in %s: %r", rp, x)
                         continue
-                    parts = x.split("_")
+
+                    # Accept several common separators (underscore, dot, hyphen).
+                    parts = None
+                    for sep in ("_", ".", "-"):
+                        if sep in x:
+                            parts = x.split(sep)
+                            break
+
+                    if parts is None:
+                        parts = [x]
+
                     if len(parts) >= 2 and parts[0] and parts[1]:
                         f_ranks.append(Node(parts[0], parts[1]))
                     elif len(parts) >= 1 and parts[0]:
                         # missing fault part, fallback to 'unknown'
-                        logging.warning("Rank entry '%s' missing fault part; using 'unknown'", x)
+                        logging.warning("Rank entry '%s' in %s missing fault part; using 'unknown'", x, rp)
                         f_ranks.append(Node(parts[0], "unknown"))
                     else:
-                        logging.warning("Skipping malformed rank entry: '%s'", x)
+                        logging.warning("Skipping malformed rank entry in %s: '%s'", rp, x)
 
                 s_evaluator.add_case(ranks=s_ranks, answer=Node(service, "unknown"))
                 f_evaluator.add_case(ranks=f_ranks, answer=Node(service, fault))
