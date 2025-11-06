@@ -102,7 +102,6 @@ def parse_args():
 
 args = parse_args()
 
-<<<<<<< HEAD
 def _extract_zip_if_present(zip_name: str, extract_to: str, extract_base: str = "data"):
     """If a zip file named `zip_name` exists in cwd, extract it into `extract_base` and remove the zip.
     If the target extraction path already exists, do nothing.
