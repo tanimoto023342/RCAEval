@@ -105,21 +105,21 @@ local_path="app/"
 
 # download dataset
 if "online-boutique" in args.dataset or "re1-ob" in args.dataset:
-    download_online_boutique_dataset(local=local_path)
+    download_online_boutique_dataset(local_path=local_path)
 elif "sock-shop-1" in args.dataset:
-    download_sock_shop_1_dataset(local=local_path)
+    download_sock_shop_1_dataset(local_path=local_path)
 elif "sock-shop-2" in args.dataset or "re1-ss" in args.dataset:
-    download_sock_shop_2_dataset(local=local_path)
+    download_sock_shop_2_dataset(local_path=local_path)
 elif "train-ticket" in args.dataset or "re1-tt" in args.dataset:
-    download_train_ticket_dataset(local=local_path)
+    download_train_ticket_dataset(local_path=local_path)
 elif "re2-ob" in args.dataset.lower():
-    download_re2ob_dataset(local=local_path)
+    download_re2ob_dataset(local_path=local_path)
 elif "re2-ss" in args.dataset.lower():
-    download_re2ss_dataset(local=local_path)
+    download_re2ss_dataset(local_path=local_path)
 elif "re2-tt" in args.dataset.lower():
-    download_re2tt_dataset(local=local_path)
+    download_re2tt_dataset(local_path=local_path)
 elif "re3" in args.dataset:
-    download_re3_dataset(local=local_path)
+    download_re3_dataset(local_path=local_path)
 else:
     raise Exception(f"{args.dataset} is not defined!")
 
