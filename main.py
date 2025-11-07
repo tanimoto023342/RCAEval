@@ -542,3 +542,5 @@ for name, s_evaluator, f_evaluator in [
 print("---")
 print("Avg speed:", avg_speed)
 
+json.dump(eval_data, open(join(result_path, "summary.json"), "w"), indent=2)
+
