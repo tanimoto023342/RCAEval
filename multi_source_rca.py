@@ -92,25 +92,34 @@ def analyze_service(service_path):
                 raise ValueError(f"Empty inject_time in {inject_time_path}")
             inject_time = int(inject_time_str)
 
-    # Preprocess data
-    metrics = metrics.loc[:, ~metrics.columns.str.endswith("_latency-50")]
-    metrics = metrics.replace([np.inf, -np.inf], np.nan)
+        # Preprocess data
+        metrics = metrics.loc[:, ~metrics.columns.str.endswith("_latency-50")]
+        metrics = metrics.replace([np.inf, -np.inf], np.nan)
 
-    # Create multi-source data dictionary
-    mmdata = {
-        "metric": metrics,
-        "logs": logs,
-        "traces": traces,
-        "logts": None,  # RE3-OBデータセットではlogtsは含まれていない
-        "tracets_lat": None,  # RE3-OBデータセットではtracets_latは含まれていない
-        "tracets_err": None,  # RE3-OBデータセットではtracets_errは含まれていない
-        "cluster_info": None
-    }
+        # Create multi-source data dictionary
+        mmdata = {
+            "metric": metrics,
+            "logs": logs,
+            "traces": traces,
+            "logts": None,  # RE3-OBデータセットではlogtsは含まれていない
+            "tracets_lat": None,  # RE3-OBデータセットではtracets_latは含まれていない
+            "tracets_err": None,  # RE3-OBデータセットではtracets_errは含まれていない
+            "cluster_info": None
+        }
 
-    # Perform root cause analysis using MMBARO
-    output = mmbaro(mmdata, inject_time)
-    ranks = output["ranks"]
-    return ranks
+        # Perform root cause analysis using MMBARO
+        output = mmbaro(mmdata, inject_time)
+        ranks = output["ranks"]
+        return ranks
+            
+    except pd.errors.EmptyDataError as e:
+        raise ValueError(f"Empty CSV file: {str(e)}")
+    except pd.errors.ParserError as e:
+        raise ValueError(f"CSV parsing error: {str(e)}")
+    except Exception as e:
+        raise Exception(f"Error processing data: {str(e)}")
+
+
 
 def main():
     # RE3-OBのzipファイルパスを確認
