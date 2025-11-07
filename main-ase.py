@@ -241,13 +241,28 @@ dataset = DATASET_MAP[args.dataset]
 
 
 # prepare input paths
+logging.info("Looking for data files in: %s", dataset)
 data_paths = list(glob.glob(os.path.join(dataset, "**/data.csv"), recursive=True))
+if not data_paths:
+    # Try looking for simple_metrics.csv directly
+    data_paths = list(glob.glob(os.path.join(dataset, "**/simple_metrics.csv"), recursive=True))
+    logging.info("No data.csv files found, found %d simple_metrics.csv files", len(data_paths))
+else:
+    logging.info("Found %d data.csv files", len(data_paths))
+
 new_data_paths = []
-for p in data_paths: 
-    if os.path.exists(p.replace("data.csv", "simple_data.csv")):
-        new_data_paths.append(p.replace("data.csv", "simple_data.csv"))
+for p in data_paths:
+    simple_data = p.replace("data.csv", "simple_data.csv")
+    simple_metrics = p.replace("data.csv", "simple_metrics.csv")
+    if os.path.exists(simple_data):
+        logging.info("Using simple_data.csv instead of %s", p)
+        new_data_paths.append(simple_data)
+    elif os.path.exists(simple_metrics):
+        logging.info("Using simple_metrics.csv instead of %s", p)
+        new_data_paths.append(simple_metrics)
     else:
         new_data_paths.append(p)
+        logging.info("Using original file: %s", p)
 data_paths = new_data_paths
 if args.test is True:
     data_paths = sorted(data_paths)[:2]
