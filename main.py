@@ -427,8 +427,8 @@ for service in services:
         s_evaluator = Evaluator()
         f_evaluator = Evaluator()
 
-        for rp in rps:
-            s, m = basename(rp).split("_")[:2]
+        for rp in valid_rps:
+            s, m = basename(rp).split("_")[:2]  # <-- これで安全
             if s != service or m != fault:
                 continue  # ignore
 
