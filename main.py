@@ -372,8 +372,28 @@ avg_speed=0
 
 # ======== EVALUTION ===========
 rps = glob.glob(join(result_path, "*.json"))
-services = sorted(list(set([basename(x).split("_")[0] for x in rps])))
-faults = sorted(list(set([basename(x).split("_")[1] for x in rps])))
+# フィルタリング: アンダースコアを少なくとも1つ含むファイルのみを対象とする
+# (service_metric_... という形式を期待)
+services_list = []
+faults_list = []
+
+# 命名規則に従わないファイルを処理から除外する
+valid_rps = [] 
+
+for x in rps:
+    parts = basename(x).split("_")
+    # 少なくとも 'service' と 'metric' が抽出できるかチェック
+    if len(parts) > 1: 
+        services_list.append(parts[0])
+        faults_list.append(parts[1])
+        valid_rps.append(x)
+    else:
+        # 命名規則に従わないファイルは無視する
+        print(f"Warning: Ignoring file with unexpected format: {basename(x)}")
+
+
+services = sorted(list(set(services_list)))
+faults = sorted(list(set(faults_list)))
 
 eval_data = {
     "service-fault": [],
