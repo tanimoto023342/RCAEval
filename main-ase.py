@@ -7,6 +7,8 @@ import warnings
 from datetime import datetime, timedelta
 from multiprocessing import Pool
 from os.path import abspath, basename, dirname, exists, join
+import zipfile
+import logging
 
 # turn off all warnings
 warnings.filterwarnings("ignore")
@@ -33,6 +35,9 @@ from RCAEval.utility import (
     download_re2_dataset,
     download_re3_dataset, 
 )
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
 
 if is_py312():
@@ -99,19 +104,121 @@ def parse_args():
 
 args = parse_args()
 
-# download dataset
+def _extract_zip_if_present(zip_name: str, extract_to: str, extract_base: str = "data"):
+    """If a zip file named `zip_name` exists in cwd, extract it into `extract_base` and remove the zip.
+    If the target extraction path already exists, do nothing.
+    """
+    target_path = os.path.join(extract_base, extract_to)
+    if os.path.exists(target_path):
+        return
+    if os.path.exists(zip_name):
+        logging.info(f'Extracting {zip_name} to {extract_base}')
+        with zipfile.ZipFile(zip_name, "r") as zf:
+            zf.extractall(extract_base)
+        try:
+            os.remove(zip_name)
+        except Exception:
+            pass
+
+# download dataset (if extracted folder exists we skip; if zip exists we extract only; otherwise download)
 if "online-boutique" in args.dataset or "re1-ob" in args.dataset:
-    download_online_boutique_dataset()
+    logging.info("Processing online-boutique dataset...")
+    zip_name = "online-boutique.zip"
+    target_path = os.path.join("data", "online-boutique")
+    if os.path.exists(target_path):
+        logging.info("Online-boutique dataset already extracted at %s", target_path)
+    elif os.path.exists(zip_name):
+        _extract_zip_if_present(zip_name, "online-boutique")
+        logging.info("Online-boutique dataset extracted from %s", zip_name)
+    else:
+        logging.info("Downloading online-boutique dataset...")
+        download_online_boutique_dataset()
 elif "sock-shop-1" in args.dataset:
-    download_sock_shop_1_dataset()
+    logging.info("Processing sock-shop-1 dataset...")
+    zip_name = "sock-shop-1.zip"
+    target_path = os.path.join("data", "sock-shop-1")
+    if os.path.exists(target_path):
+        logging.info("Sock-shop-1 dataset already extracted at %s", target_path)
+    elif os.path.exists(zip_name):
+        _extract_zip_if_present(zip_name, "sock-shop-1")
+        logging.info("Sock-shop-1 dataset extracted from %s", zip_name)
+    else:
+        logging.info("Downloading sock-shop-1 dataset...")
+        download_sock_shop_1_dataset()
 elif "sock-shop-2" in args.dataset or "re1-ss" in args.dataset:
-    download_sock_shop_2_dataset()
+    logging.info("Processing sock-shop-2 dataset...")
+    zip_name = "sock-shop-2.zip"
+    target_path = os.path.join("data", "sock-shop-2")
+    if os.path.exists(target_path):
+        logging.info("Sock-shop-2 dataset already extracted at %s", target_path)
+    elif os.path.exists(zip_name):
+        _extract_zip_if_present(zip_name, "sock-shop-2")
+        logging.info("Sock-shop-2 dataset extracted from %s", zip_name)
+    else:
+        logging.info("Downloading sock-shop-2 dataset...")
+        download_sock_shop_2_dataset()
 elif "train-ticket" in args.dataset or "re1-tt" in args.dataset:
-    download_train_ticket_dataset()
+    logging.info("Processing train-ticket dataset...")
+    zip_name = "train-ticket.zip"
+    target_path = os.path.join("data", "train-ticket")
+    if os.path.exists(target_path):
+        logging.info("Train-ticket dataset already extracted at %s", target_path)
+    elif os.path.exists(zip_name):
+        _extract_zip_if_present(zip_name, "train-ticket")
+        logging.info("Train-ticket dataset extracted from %s", zip_name)
+    else:
+        logging.info("Downloading train-ticket dataset...")
+        download_train_ticket_dataset()
 elif "re2" in args.dataset:
-    download_re2_dataset()
+    logging.info("Processing RE2 datasets...")
+    re2_base = os.path.join("data", "RE2")
+    ob_path = os.path.join(re2_base, "RE2-OB")
+    ss_path = os.path.join(re2_base, "RE2-SS")
+    tt_path = os.path.join(re2_base, "RE2-TT")
+    if os.path.exists(ob_path) and os.path.exists(ss_path) and os.path.exists(tt_path):
+        logging.info("RE2 datasets already extracted at %s", re2_base)
+    else:
+        extracted_any = False
+        if os.path.exists("RE2-OB.zip"):
+            _extract_zip_if_present("RE2-OB.zip", os.path.join("RE2", "RE2-OB"), extract_base=re2_base)
+            logging.info("Extracted RE2-OB.zip")
+            extracted_any = True
+        if os.path.exists("RE2-SS.zip"):
+            _extract_zip_if_present("RE2-SS.zip", os.path.join("RE2", "RE2-SS"), extract_base=re2_base)
+            logging.info("Extracted RE2-SS.zip")
+            extracted_any = True
+        if os.path.exists("RE2-TT.zip"):
+            _extract_zip_if_present("RE2-TT.zip", os.path.join("RE2", "RE2-TT"), extract_base=re2_base)
+            logging.info("Extracted RE2-TT.zip")
+            extracted_any = True
+        if not extracted_any:
+            logging.info("Downloading RE2 datasets...")
+            download_re2_dataset()
 elif "re3" in args.dataset:
-    download_re3_dataset()
+    logging.info("Processing RE3 datasets...")
+    re3_base = os.path.join("data", "RE3")
+    ob_path = os.path.join(re3_base, "RE3-OB")
+    ss_path = os.path.join(re3_base, "RE3-SS")
+    tt_path = os.path.join(re3_base, "RE3-TT")
+    if os.path.exists(ob_path) and os.path.exists(ss_path) and os.path.exists(tt_path):
+        logging.info("RE3 datasets already extracted at %s", re3_base)
+    else:
+        extracted_any = False
+        if os.path.exists("RE3-OB.zip"):
+            _extract_zip_if_present("RE3-OB.zip", os.path.join("RE3", "RE3-OB"), extract_base=re3_base)
+            logging.info("Extracted RE3-OB.zip")
+            extracted_any = True
+        if os.path.exists("RE3-SS.zip"):
+            _extract_zip_if_present("RE3-SS.zip", os.path.join("RE3", "RE3-SS"), extract_base=re3_base)
+            logging.info("Extracted RE3-SS.zip")
+            extracted_any = True
+        if os.path.exists("RE3-TT.zip"):
+            _extract_zip_if_present("RE3-TT.zip", os.path.join("RE3", "RE3-TT"), extract_base=re3_base)
+            logging.info("Extracted RE3-TT.zip")
+            extracted_any = True
+        if not extracted_any:
+            logging.info("Downloading RE3 datasets...")
+            download_re3_dataset()
 else:
     raise Exception(f"{args.dataset} is not defined!")
 
