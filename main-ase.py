@@ -336,6 +336,7 @@ def process(data_path):
     num_node = len(data.columns) - 1
 
     # select sli for certain methods
+    sli = None
     if "my-sock-shop" in data_path:
         sli = "front-end_cpu"
         if f"{service}_latency" in data:
@@ -348,10 +349,30 @@ def process(data_path):
         sli = "ts-ui-dashboard_latency-90"
         if f"{service}_latency" in data:
             sli = f"{service}_latency"
-    elif "online-boutique" in data_path:
+    elif "online-boutique" in data_path or "re2-ob" in data_path:  # Added re2-ob
         sli = "frontend_latency-90"
         if f"{service}_latency" in data:
             sli = f"{service}_latency"
+    
+    # Default SLI selection if none matched
+    if sli is None:
+        # Try service-specific latency
+        if f"{service}_latency" in data:
+            sli = f"{service}_latency"
+            logging.info("Using service-specific latency as SLI: %s", sli)
+        # Try front-end latency
+        elif "frontend_latency" in data:
+            sli = "frontend_latency"
+            logging.info("Using frontend latency as SLI: %s", sli)
+        else:
+            # Default to the first metric for this service
+            service_metrics = [col for col in data.columns if col.startswith(f"{service}_")]
+            if service_metrics:
+                sli = service_metrics[0]
+                logging.info("Using first service metric as SLI: %s", sli)
+            else:
+                sli = next((col for col in data.columns if "latency" in col.lower()), data.columns[0])
+                logging.info("Using fallback SLI: %s", sli)
 
     # == PROCESS ==
     func = globals()[args.method]
