@@ -373,7 +373,8 @@ for data_path in tqdm(sorted(data_paths)):
 
 end_time = datetime.now()
 time_taken = end_time - start_time
-avg_speed = round(time_taken.total_seconds() / len(data_paths), 2)
+#avg_speed = round(time_taken.total_seconds() / len(data_paths), 2)
+avg_speed =0
 
 
 # ======== EVALUTION ===========
